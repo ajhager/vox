@@ -15,6 +15,10 @@ import (
     "runtime"
 )
 
+func init() {
+    runtime.LockOSThread()
+}
+
 const (
     // Init flags
     NO_DEBUG_OUTPUT = C.SV_INIT_FLAG_NO_DEBUG_OUTPUT
