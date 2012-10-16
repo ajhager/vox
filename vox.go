@@ -27,6 +27,13 @@ const (
     AUDIO_FLOAT32 = C.SV_INIT_FLAG_AUDIO_FLOAT32
     ONE_THREAD = C.SV_INIT_FLAG_ONE_THREAD
 
+    // Note constants
+    NOTE_OFF = C.NOTECMD_NOTE_OFF
+    ALL_NOTES_OFF = C.NOTECMD_ALL_NOTES_OFF
+    CLEAN_SYNTHS = C.NOTECMD_CLEAN_SYNTHS
+    STOP = C.NOTECMD_STOP
+    PLAY = C.NOTECMD_PLAY
+
     // Module flags
     FLAG_EXISTS = C.SV_MODULE_FLAG_EXISTS
     FLAG_EFFECT = C.SV_MODULE_FLAG_EFFECT
@@ -81,6 +88,16 @@ func Quit() error {
 // SampleType returns the internal sample type of the sunvox engine.
 func SampleType() int {
     return int(C.vox_get_sample_type())
+}
+
+// Ticks returns the current tick counter (from 0 to 0xFFFFFFFF).
+func Ticks() uint {
+    return uint(C.vox_get_ticks())
+}
+
+// TicksPerSecond returns the number of sunvox ticks per second.
+func TicksPerSecond() uint {
+    return uint(C.vox_get_ticks_per_second())
 }
 
 // Song is used to load and play sunvox songs.

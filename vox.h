@@ -12,6 +12,14 @@ int vox_get_sample_type() {
   return sv_get_sample_type();
 }
 
+unsigned int vox_get_ticks() {
+  return sv_get_ticks();
+}
+
+unsigned int vox_get_ticks_per_second() {
+  return sv_get_ticks_per_second();
+}
+
 int vox_open_slot(int slot) {
   return sv_open_slot(slot);
 }
@@ -82,4 +90,8 @@ int vox_get_song_length_frames(int slot) {
 
 int vox_get_song_length_lines(int slot) {
   return sv_get_song_length_lines(slot);
+}
+
+int vox_get_number_of_modules(int slot) {
+  return sv_get_number_of_modules(slot);
 }
