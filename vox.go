@@ -131,3 +131,12 @@ func (s Slot) Play() error {
 func (s Slot) Line() int {
     return int(C.vox_get_current_line(C.int(s)))
 }
+
+// SetLooping enables or disables loop
+func (s Slot) SetLooping(loop bool) {
+    if loop {
+        C.vox_set_autostop(C.int(s), C.int(0));
+    } else {
+        C.vox_set_autostop(C.int(s), C.int(1));
+    }
+}

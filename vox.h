@@ -36,3 +36,9 @@ int vox_get_current_line(int slot) {
   return sv_get_current_line(slot);
 }
 
+int vox_set_autostop(int slot, int stop) {
+  return sv_set_autostop(slot, stop);
+}
+
+
+
