@@ -179,7 +179,7 @@ func (s *Song) SetLooping(loop bool) {
     }
 }
 
-// Rewind the song by t seconds.
+// Rewind the song by t lines.
 func (s *Song) Rewind(t int) {
     C.vox_rewind(s.slot, C.int(t))
 }
