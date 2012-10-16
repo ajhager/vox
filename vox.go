@@ -103,6 +103,7 @@ func TicksPerSecond() uint {
 // Song is used to load and play sunvox songs.
 type Song struct {
     slot C.int
+    volume int
 }
 
 // Open creates a new slot and laods a sunvox song into it.
@@ -119,10 +120,12 @@ func Open(path string) (*Song, error) {
     }
 
     slots++
-    return &Song{C.int(slot)}, nil
+    song := &Song{C.int(slot), 256}
+    song.SetVolume(song.volume)
+    return song, nil
 }
 
-// Close closes the slot. The slot should no longer be used after calling it.
+// Close the song. The song should not be used after calling this.
 func (s *Song) Close() error {
     if C.vox_close_slot(s.slot) != C.int(0) {
         return errors.New(fmt.Sprintf("Problem closing slot %v", s))
@@ -130,11 +133,17 @@ func (s *Song) Close() error {
     return nil
 }
 
-// SetVolume sets the volume of the slot.
+// Volume returns the volume of the song.
+func (s *Song) Volume() int {
+    return s.volume
+}
+
+// SetVolume sets the volume of the song.
 func (s *Song) SetVolume(vol int) error {
     if C.vox_volume(s.slot, C.int(vol)) != C.int(0) {
         return errors.New(fmt.Sprintf("Could not change slot %v's volume to %v", s, vol))
     }
+    s.volume = vol
     return nil
 }
 
@@ -151,8 +160,8 @@ func (s *Song) Replay() {
     C.vox_play_from_beginning(s.slot)
 }
 
-// Stop stops playback on the slot.
-func (s *Song) Stop() {
+// Pause stops the song's playback at its current position.
+func (s *Song) Pause() {
     C.vox_stop(s.slot);
 }
 
@@ -179,8 +188,8 @@ func (s *Song) SetLooping(loop bool) {
     }
 }
 
-// Rewind the song by t lines.
-func (s *Song) Rewind(t int) {
+// Seek to a line in the song.
+func (s *Song) Seek(t int) {
     C.vox_rewind(s.slot, C.int(t))
 }
 
