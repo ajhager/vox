@@ -1,0 +1,3 @@
+v1.7.2b (22 sep 2012):
+* new functions for working with pattern data directly;
+* some bugs fixed.
