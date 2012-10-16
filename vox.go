@@ -12,14 +12,30 @@ import (
     "errors"
     "fmt"
     "unsafe"
+    "runtime"
 )
 
 const (
+    // Init flags
     NO_DEBUG_OUTPUT = C.SV_INIT_FLAG_NO_DEBUG_OUTPUT
     USER_AUDIO_CALLBACK = C.SV_INIT_FLAG_USER_AUDIO_CALLBACK
     AUDIO_INT16 = C.SV_INIT_FLAG_AUDIO_INT16
     AUDIO_FLOAT32 = C.SV_INIT_FLAG_AUDIO_FLOAT32
     ONE_THREAD = C.SV_INIT_FLAG_ONE_THREAD
+
+    // Module flags
+    FLAG_EXISTS = C.SV_MODULE_FLAG_EXISTS
+    FLAG_EFFECT = C.SV_MODULE_FLAG_EFFECT
+    INPUTS_OFF = C.SV_MODULE_INPUTS_OFF
+    INPUTS_MASK = C.SV_MODULE_INPUTS_MASK
+    OUTPUTS_OFF = C.SV_MODULE_OUTPUTS_OFF
+    OUTPUTS_MASK = C.SV_MODULE_OUTPUTS_MASK
+
+    // Type flags
+    INT16 = C.SV_STYPE_INT16
+    INT32 = C.SV_STYPE_INT32
+    FLOAT32 = C.SV_STYPE_FLOAT32
+    FLOAT64 = C.SV_STYPE_FLOAT64
 )
 
 var (
@@ -54,6 +70,10 @@ func Quit() error {
     }
 
     return nil
+}
+
+func SampleType() int {
+    return int(C.vox_get_sample_type())
 }
 
 type Slot int

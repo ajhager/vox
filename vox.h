@@ -8,6 +8,10 @@ int vox_deinit() {
   return sv_deinit();
 }
 
+int vox_get_sample_type() {
+  return sv_get_sample_type();
+}
+
 int vox_open_slot(int slot) {
   return sv_open_slot(slot);
 }
