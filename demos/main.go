@@ -2,6 +2,7 @@ package main
 
 import (
     "hagerbot.com/vox"
+    "time"
 )
 
 func main() {
@@ -12,17 +13,25 @@ func main() {
 
     println(vox.Version)
 
-    slot, err := vox.Open("../data/songs/test.sunvox")
+    song, err := vox.Open("../data/songs/test.sunvox")
     if err != nil {
         panic(err)
     }
 
-    slot.SetVolume(256)
+    println(song.Name())
 
-    slot.Play()
+    song.SetVolume(256)
 
-    for {}
+    song.Event(0, 64, 128, 7, 0, 0)
+    time.Sleep(1 * time.Second)
+    song.Event(0, 64, 128, 7, 0, 0)
+    time.Sleep(1 * time.Second)
 
-    slot.Close()
+    song.Play()
+
+    for {
+    }
+
+    song.Close()
     vox.Quit()
 }

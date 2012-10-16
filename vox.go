@@ -83,60 +83,121 @@ func SampleType() int {
     return int(C.vox_get_sample_type())
 }
 
-// Slot is used to load and play sunvox songs.
-type Slot int
+// Song is used to load and play sunvox songs.
+type Song struct {
+    slot C.int
+}
 
 // Open creates a new slot and laods a sunvox song into it.
-func Open(path string) (Slot, error) {
+func Open(path string) (*Song, error) {
     slot := slots
     if C.vox_open_slot(C.int(slot)) != C.int(0) {
-        return -1, errors.New("Could not open new slot")
+        return nil, errors.New("Could not open new slot")
     }
 
     name := C.CString(path)
     defer C.free(unsafe.Pointer(name))
     if C.vox_load(C.int(slot), name) != C.int(0) {
-        return -1, errors.New(fmt.Sprintf("Could not open song %s", path))
+        return nil, errors.New(fmt.Sprintf("Could not open song %s", path))
     }
 
     slots++
-    return Slot(slot), nil
+    return &Song{C.int(slot)}, nil
 }
 
 // Close closes the slot. The slot should no longer be used after calling it.
-func (s Slot) Close() error {
-    if C.vox_close_slot(C.int(s)) != C.int(0) {
+func (s *Song) Close() error {
+    if C.vox_close_slot(s.slot) != C.int(0) {
         return errors.New(fmt.Sprintf("Problem closing slot %v", s))
     }
     return nil
 }
 
 // SetVolume sets the volume of the slot.
-func (s Slot) SetVolume(vol int) error {
-    if C.vox_volume(C.int(s), C.int(vol)) != C.int(0) {
+func (s *Song) SetVolume(vol int) error {
+    if C.vox_volume(s.slot, C.int(vol)) != C.int(0) {
         return errors.New(fmt.Sprintf("Could not change slot %v's volume to %v", s, vol))
     }
     return nil
 }
 
 // Play starts playback from where ever the song was stopped.
-func (s Slot) Play() error {
-    if C.vox_play(C.int(s)) != C.int(0) {
+func (s *Song) Play() error {
+    if C.vox_play(s.slot) != C.int(0) {
         return errors.New(fmt.Sprintf("Could not play slot %v", s))
     }
     return nil
 }
 
-// Line returns the current line in the song.
-func (s Slot) Line() int {
-    return int(C.vox_get_current_line(C.int(s)))
+// Replay starts playback from the beginning.
+func (s *Song) Replay() {
+    C.vox_play_from_beginning(s.slot)
 }
 
-// SetLooping enables or disables loop
-func (s Slot) SetLooping(loop bool) {
-    if loop {
-        C.vox_set_autostop(C.int(s), C.int(0));
-    } else {
-        C.vox_set_autostop(C.int(s), C.int(1));
+// Stop stops playback on the slot.
+func (s *Song) Stop() {
+    C.vox_stop(s.slot);
+}
+
+// Finished indicates if the song has gotten to the end.
+func (s *Song) Finished() bool {
+    ended := C.vox_end_of_song(s.slot)
+    if ended == 0 {
+        return false
     }
+    return true;
+}
+
+// Line returns the current line in the song.
+func (s *Song) Line() int {
+    return int(C.vox_get_current_line(s.slot))
+}
+
+// SetLooping enables or disables looping.
+func (s *Song) SetLooping(loop bool) {
+    if loop {
+        C.vox_set_autostop(s.slot, C.int(0));
+    } else {
+        C.vox_set_autostop(s.slot, C.int(1));
+    }
+}
+
+// Rewind the song by t seconds.
+func (s *Song) Rewind(t int) {
+    C.vox_rewind(s.slot, C.int(t))
+}
+
+// Name retuns the name of the song.
+func (s *Song) Name() string {
+    return C.GoString(C.vox_get_song_name(s.slot))
+}
+
+// Event plays a note on a channel in a module.
+func (s *Song) Event(channel, note, vel, module, ctl, val int) {
+    C.vox_send_event(s.slot, C.int(channel), C.int(note), C.int(vel), C.int(module), C.int(ctl), C.int(val))
+}
+
+// Level returns the current signal level of a channel.
+func (s *Song) Level(channel int) int {
+    return int(C.vox_get_current_signal_level(s.slot, C.int(channel)))
+}
+
+// BeatsPerMinute returns the songs beats per minute.
+func (s *Song) BeatsPerMinute() int {
+    return int(C.vox_get_song_bpm(s.slot))
+}
+
+// TicksPerLine returns the number of ticks per line.
+func (s *Song) TicksPerLine() int {
+    return int(C.vox_get_song_tpl(s.slot))
+}
+
+// Frames gives the length of the song in frames.
+func (s *Song) Frames() int {
+    return int(C.vox_get_song_length_frames(s.slot))
+}
+
+// Lines gives the length of the song in lines.
+func (s *Song) Lines() int {
+    return int(C.vox_get_song_length_lines(s.slot))
 }
