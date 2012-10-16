@@ -47,6 +47,7 @@ var (
     slots = 0
 )
 
+// Init loads the sunvox dll and initializes the library.
 func Init(dev string, freq, channels, flags int) error {
     if C.sv_load_dll() != C.int(0) {
         return errors.New("Could not load sunvox library")
@@ -64,6 +65,7 @@ func Init(dev string, freq, channels, flags int) error {
     return nil
 }
 
+// Quit deinitializes the library and unloads the sunvox dll.
 func Quit() error {
     if C.vox_deinit() != C.int(0) {
         return errors.New("Problem uninitializing sunvox library")
@@ -76,12 +78,15 @@ func Quit() error {
     return nil
 }
 
+// SampleType returns the internal sample type of the sunvox engine.
 func SampleType() int {
     return int(C.vox_get_sample_type())
 }
 
+// Slot is used to load and play sunvox songs.
 type Slot int
 
+// Open creates a new slot and laods a sunvox song into it.
 func Open(path string) (Slot, error) {
     slot := slots
     if C.vox_open_slot(C.int(slot)) != C.int(0) {
@@ -98,6 +103,7 @@ func Open(path string) (Slot, error) {
     return Slot(slot), nil
 }
 
+// Close closes the slot. The slot should no longer be used after calling it.
 func (s Slot) Close() error {
     if C.vox_close_slot(C.int(s)) != C.int(0) {
         return errors.New(fmt.Sprintf("Problem closing slot %v", s))
@@ -105,6 +111,7 @@ func (s Slot) Close() error {
     return nil
 }
 
+// SetVolume sets the volume of the slot.
 func (s Slot) SetVolume(vol int) error {
     if C.vox_volume(C.int(s), C.int(vol)) != C.int(0) {
         return errors.New(fmt.Sprintf("Could not change slot %v's volume to %v", s, vol))
@@ -112,6 +119,7 @@ func (s Slot) SetVolume(vol int) error {
     return nil
 }
 
+// Play starts playback from where ever the song was stopped.
 func (s Slot) Play() error {
     if C.vox_play(C.int(s)) != C.int(0) {
         return errors.New(fmt.Sprintf("Could not play slot %v", s))
@@ -119,6 +127,7 @@ func (s Slot) Play() error {
     return nil
 }
 
+// Line returns the current line in the song.
 func (s Slot) Line() int {
     return int(C.vox_get_current_line(C.int(s)))
 }
