@@ -1,7 +1,8 @@
 package vox
 
-// #cgo -windows LDFLAGS: -lstdc++ -ldl -lm
 // #define SUNVOX_MAIN
+// #cgo linux LDFLAGS: -lstdc++ -ldl -lm
+// #cgo darwin LDFLAGS: -lstdc++ -ldl -lm
 // #include <stdio.h>
 // #include <stdlib.h>
 // #ifndef _WIN32
