@@ -1,10 +1,15 @@
 package vox
 
-// #cgo LDFLAGS: -lstdc++ -ldl -lm
+// #cgo -windows LDFLAGS: -lstdc++ -ldl -lm
 // #define SUNVOX_MAIN
 // #include <stdio.h>
 // #include <stdlib.h>
+// #ifndef _WIN32
 // #include <dlfcn.h>
+// #endif
+// #ifdef _WIN32
+// #include <windows.h>
+// #endif
 // #include "vox.h"
 import "C"
 
