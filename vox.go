@@ -188,9 +188,16 @@ func (s *Song) SetLooping(loop bool) {
     }
 }
 
-// Seek to a line in the song.
-func (s *Song) Seek(t int) {
-    C.vox_rewind(s.slot, C.int(t))
+// Seek sets the offset of the song in lines, interpreted according to whence: // 0 means relative to the start of the song, 1 means relative to the current // line, and 2 means relative to the end.
+func (s *Song) Seek(offset, whence int) {
+    switch whence {
+    case 1:
+        C.vox_rewind(s.slot, C.int(s.Line() + offset))
+    case 2:
+        C.vox_rewind(s.slot, C.int(s.Lines() + offset))
+    default:
+        C.vox_rewind(s.slot, C.int(offset))
+    }
 }
 
 // Name retuns the name of the song.
