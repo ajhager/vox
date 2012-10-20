@@ -121,6 +121,11 @@ func (m *Module) Position() (int, int) {
 }
 
 // Trigger plays a note on a channel in a module.
+// channel: 0..7
+// note: 0..127 - note; 128 - note off; 129, 130.. - note command
+// vel: 1..129
+// ctl: CCXX; CC - controller number; X - std effect
+// val: controller value
 func (m *Module) Trigger(channel, note, vel, ctl, val int) {
     C.vox_send_event(m.song, C.int(channel), C.int(note), C.int(vel), m.num, C.int(ctl), C.int(val))
 }
@@ -130,7 +135,7 @@ type Song struct {
     slot C.int
     name string
     volume, bpm, tpl, frames, lines int
-    Modules []*Module
+    Mod []*Module
 }
 
 // Open creates a new slot and laods a sunvox song into it.

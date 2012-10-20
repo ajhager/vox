@@ -10,6 +10,7 @@ func main() {
     if err != nil {
         panic(err)
     }
+    defer vox.Quit()
 
     println(vox.Version)
 
@@ -17,21 +18,19 @@ func main() {
     if err != nil {
         panic(err)
     }
+    defer song.Close()
 
     println(song.Name())
 
     song.SetVolume(256)
 
-    song.Modules[7].Trigger(0, 64, 128, 0, 0)
+    song.Mod[7].Trigger(0, 64, 128, 0, 0)
     time.Sleep(1 * time.Second)
-    song.Modules[7].Trigger(0, 64, 128, 0, 0)
+    song.Mod[7].Trigger(0, 64, 128, 0, 0)
     time.Sleep(1 * time.Second)
 
     song.Play()
 
-    for {
+    for !song.Finished() {
     }
-
-    song.Close()
-    vox.Quit()
 }
