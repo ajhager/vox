@@ -79,16 +79,9 @@ func Init(dev string, freq, channels, flags int) error {
 }
 
 // Quit deinitializes the library and unloads the sunvox dll.
-func Quit() error {
-    if C.vox_deinit() != C.int(0) {
-        return errors.New("Problem uninitializing sunvox library")
-    }
-
-    if C.sv_load_dll() != C.int(0) {
-        return errors.New("Problem unloading sunvox library")
-    }
-
-    return nil
+func Quit() {
+    C.vox_deinit()
+    C.sv_unload_dll()
 }
 
 // SampleType returns the internal sample type of the sunvox engine.
@@ -106,37 +99,78 @@ func TicksPerSecond() uint {
     return uint(C.vox_get_ticks_per_second())
 }
 
+// Module synths
+type Module struct {
+    num C.int
+    song C.int
+    name string
+    red, green, blue byte
+    x, y int
+}
+
+func (m *Module) Name() string {
+    return m.name
+}
+
+func (m *Module) Color() (byte, byte, byte) {
+    return m.red, m.green, m.blue
+}
+
+func (m *Module) Position() (int, int) {
+    return m.x, m.y
+}
+
+// Trigger plays a note on a channel in a module.
+func (m *Module) Trigger(channel, note, vel, ctl, val int) {
+    C.vox_send_event(m.song, C.int(channel), C.int(note), C.int(vel), m.num, C.int(ctl), C.int(val))
+}
+
 // Song is used to load and play sunvox songs.
 type Song struct {
     slot C.int
-    volume int
+    name string
+    volume, bpm, tpl, frames, lines int
+    Modules []*Module
 }
 
 // Open creates a new slot and laods a sunvox song into it.
 func Open(path string) (*Song, error) {
-    slot := slots
-    if C.vox_open_slot(C.int(slot)) != C.int(0) {
+    slot := C.int(slots)
+    if C.vox_open_slot(slot) != C.int(0) {
         return nil, errors.New("Could not open new slot")
     }
 
     name := C.CString(path)
     defer C.free(unsafe.Pointer(name))
-    if C.vox_load(C.int(slot), name) != C.int(0) {
+    if C.vox_load(slot, name) != C.int(0) {
         return nil, errors.New(fmt.Sprintf("Could not open song %s", path))
     }
 
     slots++
-    song := &Song{C.int(slot), 256}
+    num_mods := int(C.vox_get_number_of_modules(slot))
+    modules := make([]*Module, num_mods)
+    for i := 0; i < num_mods; i++ {
+        mod := new(Module)
+        mod.num = C.int(i)
+        mod.song = slot
+        mod.name = C.GoString(C.vox_get_module_name(slot, C.int(i)))
+        color := C.vox_get_module_color(slot, C.int(i))
+        mod.red = byte(color & 255)
+        mod.blue = byte((color >> 8) & 255)
+        mod.green = byte((color >> 16) & 255)
+        xy := C.vox_get_module_xy(slot, C.int(i))
+        mod.x = int(xy >> 16)
+        mod.y = int(xy & 0xffff)
+        modules[i] = mod
+    }
+    song := &Song{slot, C.GoString(C.vox_get_song_name(slot)), 100, int(C.vox_get_song_bpm(slot)), int(C.vox_get_song_tpl(slot)), int(C.vox_get_song_length_frames(slot)), int(C.vox_get_song_length_lines(slot)), modules}
     song.SetVolume(song.volume)
     return song, nil
 }
 
 // Close the song. The song should not be used after calling this.
-func (s *Song) Close() error {
-    if C.vox_close_slot(s.slot) != C.int(0) {
-        return errors.New(fmt.Sprintf("Problem closing slot %v", s))
-    }
-    return nil
+func (s *Song) Close() {
+    C.vox_close_slot(s.slot)
 }
 
 // Volume returns the volume of the song.
@@ -145,12 +179,9 @@ func (s *Song) Volume() int {
 }
 
 // SetVolume sets the volume of the song.
-func (s *Song) SetVolume(vol int) error {
-    if C.vox_volume(s.slot, C.int(vol)) != C.int(0) {
-        return errors.New(fmt.Sprintf("Could not change slot %v's volume to %v", s, vol))
-    }
+func (s *Song) SetVolume(vol int) {
+    C.vox_volume(s.slot, C.int(vol))
     s.volume = vol
-    return nil
 }
 
 // Play starts playback from where ever the song was stopped.
@@ -206,14 +237,9 @@ func (s *Song) Seek(offset, whence int) {
     }
 }
 
-// Name retuns the name of the song.
+// Name returns the name of the song.
 func (s *Song) Name() string {
-    return C.GoString(C.vox_get_song_name(s.slot))
-}
-
-// Event plays a note on a channel in a module.
-func (s *Song) Event(channel, note, vel, module, ctl, val int) {
-    C.vox_send_event(s.slot, C.int(channel), C.int(note), C.int(vel), C.int(module), C.int(ctl), C.int(val))
+    return s.name
 }
 
 // Level returns the current signal level of a channel.
@@ -223,20 +249,20 @@ func (s *Song) Level(channel int) int {
 
 // BeatsPerMinute returns the songs beats per minute.
 func (s *Song) BeatsPerMinute() int {
-    return int(C.vox_get_song_bpm(s.slot))
+    return s.bpm
 }
 
 // TicksPerLine returns the number of ticks per line.
 func (s *Song) TicksPerLine() int {
-    return int(C.vox_get_song_tpl(s.slot))
+    return s.tpl
 }
 
 // Frames gives the length of the song in frames.
 func (s *Song) Frames() int {
-    return int(C.vox_get_song_length_frames(s.slot))
+    return s.frames
 }
 
 // Lines gives the length of the song in lines.
 func (s *Song) Lines() int {
-    return int(C.vox_get_song_length_lines(s.slot))
+    return s.lines
 }

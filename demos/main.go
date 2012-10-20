@@ -22,9 +22,9 @@ func main() {
 
     song.SetVolume(256)
 
-    song.Event(0, 64, 128, 7, 0, 0)
+    song.Modules[7].Trigger(0, 64, 128, 0, 0)
     time.Sleep(1 * time.Second)
-    song.Event(0, 64, 128, 7, 0, 0)
+    song.Modules[7].Trigger(0, 64, 128, 0, 0)
     time.Sleep(1 * time.Second)
 
     song.Play()

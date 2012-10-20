@@ -95,3 +95,15 @@ int vox_get_song_length_lines(int slot) {
 int vox_get_number_of_modules(int slot) {
   return sv_get_number_of_modules(slot);
 }
+
+const char* vox_get_module_name(int slot, int mod_num) {
+  return sv_get_module_name(slot, mod_num);
+}
+
+int vox_get_module_color(int slot, int mod_num) {
+  return sv_get_module_color(slot, mod_num);
+}
+
+int vox_get_module_xy(int slot, int mod_num) {
+  return sv_get_module_xy(slot, mod_num);
+}
