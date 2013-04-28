@@ -1,8 +1,5 @@
 vox Play and manipulate [SunVox](http://www.warmplace.ru/soft/sunvox/) songs in go
 ===
-[Documentation](http://hagerbot.com/vox/docs.html "Documentation") &nbsp;
-
-![Vox Screenshot](http://hagerbot.com/img/project_vox.png)
 
 Notes
 -----
@@ -11,7 +8,7 @@ Notes
 
 Install
 -------
-`go get hagerbot.com/vox`
+`go get github.com/ajhager/vox`
 
 Try it!
 -------
@@ -19,7 +16,7 @@ Try it!
 package main
 
 import (
-    "hagerbot.com/vox"
+    "github.com/ajhager/vox"
 )
 
 func main() {
